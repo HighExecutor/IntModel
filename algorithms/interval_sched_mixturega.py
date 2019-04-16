@@ -22,7 +22,12 @@ class IntervalMixtureSchedGA:
     def mutation(self, mutant):
         core_idx = rnd.randint(self.model.cores)
         center_idx = rnd.randint(self.max_centers)
-        mutant[core_idx][center_idx] += rnd.normal(0, 0.3 * self.model.x_size) # TODO if x==y
+        cord_idx = rnd.randint(2)
+        mutant[core_idx][center_idx][cord_idx] += rnd.normal(0, 0.3 * self.model.x_size) # TODO if x==y
+        if mutant[core_idx][center_idx][cord_idx] < 0:
+            mutant[core_idx][center_idx][cord_idx] = 0
+        if mutant[core_idx][center_idx][cord_idx] > self.model.x_size:
+            mutant[core_idx][center_idx][cord_idx] = self.model.x_size
         return mutant,
 
     def crossover(self, p1, p2):
@@ -33,8 +38,8 @@ class IntervalMixtureSchedGA:
         c1 = creator.ScheduleMixtureIndividual(np.zeros((cores, max_centers, 2)))
         c2 = creator.ScheduleMixtureIndividual(np.zeros((cores, max_centers, 2)))
         a, b = rnd.choice(range(cores), 2)
-        a = np.min(a, b)
-        b = np.max(a, b)
+        a = np.minimum(a, b)
+        b = np.maximum(a, b)
         i = 0
         while i < cores:
             if i < a or i > b:
@@ -43,7 +48,7 @@ class IntervalMixtureSchedGA:
             else:
                 c1[i] = np.copy(p2[i])
                 c2[i] = np.copy(p1[i])
-
+            i+=1
         return c1, c2
 
     def calc_distance(self, point, centers):
@@ -73,10 +78,10 @@ class IntervalMixtureSchedGA:
 
 
     def __init__(self, model, max_centers=1, ext_sol=None):
-        # self.pool = Pool(6)
+        # self.pool = Pool(5)
         # base params
-        self.pop_size = 24
-        self.generations = 10
+        self.pop_size = 20
+        self.generations = 100
         self.mut_prob = 0.6
         self.cross_prob = 0.1
         self.model = model
@@ -121,14 +126,14 @@ def main():
     transportations = read_transportations(transportations_file)
     x_size = 30
     y_size = 30
-    cores = 9
+    cores = 5
     # base_sched = creator.ScheduleIndividual(read_schedule("C:\\wspace\\projects\intmodel\\resources\\basic")) # remove external parameters
     ammodel = AgentMobilityModel(x_size, y_size, transportations, cores)
     scheduler = IntervalMixtureSchedGA(ammodel, max_centers=2, ext_sol=None)
-    result = scheduler(0, 1440)
+    result = scheduler(1100, 1440)
     best_solution = result[2].items[0]
     best_schedule = scheduler.solution_to_schedule(best_solution)
-    out_schedule = open("C:\\wspace\\projects\\intmodel\\tmp\\full_schedule", 'w')
+    out_schedule = open("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule4.sched", 'w')
     for x in range(x_size):
         for y in range(y_size):
             out_schedule.write("{}\t{}\n".format(x * y_size + y, best_schedule[x][y]))

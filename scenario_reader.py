@@ -5,8 +5,9 @@ from numpy import random
 
 x_size = 30
 y_size = 30
-agent_model_time = 0.1
-agent_transfer_time = 0.01
+agent_model_time = 0.01
+agent_transfer_time = 0.1
+max_value = 905
 
 
 def agent_model_time_func(agents):
@@ -70,7 +71,7 @@ def corresponds_modelling(transportations, schedules):
     schedule = schedules[0]
     field = np.zeros((x_size, y_size), dtype=np.int32)
     plt.ion()
-    plt.imshow(field)
+    plt.imshow(field, vmax=max_value)
     plt.contour(schedule, alpha=0.5, cmap='Set1')
     plt.tight_layout()
     plt.show()
@@ -113,7 +114,7 @@ def corresponds_modelling(transportations, schedules):
 
         # draw output
         if i % 25 == 0:
-            plt.imshow(field)
+            plt.imshow(field, vmax=max_value)
             plt.contour(schedule, cmap='Set1', alpha=0.4, linestyles="--")
             plt.show()
             plt.pause(0.0000001)
@@ -135,16 +136,21 @@ def corresponds_modelling(transportations, schedules):
 
 if __name__ == '__main__':
     # agent_model_test()
-    transportations_file = "resources\\transportations"
+    # transportations_file = "resources\\transportations"
+    transportations_file = "resources\\spb_passengers"
     transportations = read_transportations(transportations_file)
     # schedule = read_schedule("resources\\basic")
-    schedule1 = read_schedule("resources\\schedule1")
-    schedule2 = read_schedule("resources\\schedule2")
-    schedule3 = read_schedule("resources\\schedule3")
+    # schedule1 = read_schedule("resources\\schedule1")
+    # schedule2 = read_schedule("resources\\schedule2")
+    # schedule3 = read_schedule("resources\\schedule3")
+    schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule1.sched")
+    schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule2.sched")
+    schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule3.sched")
     # schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule1")
     # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule2")
     # schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule3")
     # full_ga_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\full_schedule")
+    # full_ga_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\raw_spb_schedule")
     schedules = dict()
     # schedules[0] = schedule
     # schedules[0] = full_ga_schedule
