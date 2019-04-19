@@ -3,7 +3,6 @@ from multiprocessing import Pool
 from algorithms.ga_scheme import eaMuPlusLambda
 from numpy import random as rnd
 import numpy as np
-from scipy.spatial import distance
 
 from deap import creator
 creator.create("TimeFit", base.Fitness, weights=(-1.0,))
@@ -51,37 +50,37 @@ class IntervalMixtureSchedGA:
             i+=1
         return c1, c2
 
-    def calc_distance(self, point, centers):
-        dists = np.zeros(len(centers))
-        for c in range(len(centers)):
-            dists[c] = distance.euclidean(point, centers[c])
-        return dists.min()
-
-
-    def solution_to_schedule(self, solution):
-        x_size = self.model.x_size
-        y_size = self.model.y_size
-        cores = self.model.cores
-        schedule = np.zeros((x_size, y_size), dtype=np.int32)
-        for x in range(x_size):
-            for y in range(y_size):
-                distances = np.zeros(cores)
-                for c in range(cores):
-                    distances[c] = self.calc_distance((x, y), solution[c])
-                core_idx = np.argmin(distances)
-                schedule[x][y] = core_idx
-        return schedule
-
-    def evaluate_solution(self, solution):
-        schedule = self.solution_to_schedule(solution)
-        return self.model.simulation(schedule)
+    # def calc_distance(self, point, centers):
+    #     dists = np.zeros(len(centers))
+    #     for c in range(len(centers)):
+    #         dists[c] = distance.euclidean(point, centers[c])
+    #     return dists.min()
+    #
+    #
+    # def solution_to_schedule(self, solution):
+    #     x_size = self.model.x_size
+    #     y_size = self.model.y_size
+    #     cores = self.model.cores
+    #     schedule = np.zeros((x_size, y_size), dtype=np.int32)
+    #     for x in range(x_size):
+    #         for y in range(y_size):
+    #             distances = np.zeros(cores)
+    #             for c in range(cores):
+    #                 distances[c] = self.calc_distance((x, y), solution[c])
+    #             core_idx = np.argmin(distances)
+    #             schedule[x][y] = core_idx
+    #     return schedule
+    #
+    # def evaluate_solution(self, solution):
+    #     schedule = self.solution_to_schedule(solution)
+    #     return self.model.simulation(schedule)
 
 
     def __init__(self, model, max_centers=1, ext_sol=None):
-        # self.pool = Pool(5)
+        self.pool = Pool(8)
         # base params
-        self.pop_size = 20
-        self.generations = 100
+        self.pop_size = 32
+        self.generations = 500
         self.mut_prob = 0.6
         self.cross_prob = 0.1
         self.model = model
@@ -89,15 +88,15 @@ class IntervalMixtureSchedGA:
         self.external_sol = ext_sol
 
         toolbox = base.Toolbox()
-        # toolbox.register("map", self.pool.map)
-        toolbox.register("map", map)
+        toolbox.register("map", self.pool.map)
+        # toolbox.register("map", map)
 
         toolbox.register("individual", tools.initIterate, creator.ScheduleMixtureIndividual, self.individual)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual, self.pop_size)
         toolbox.register("mate", self.crossover)
         toolbox.register("mutate", self.mutation)
         toolbox.register("select", tools.selTournament, tournsize=3)
-        toolbox.register("evaluate", self.evaluate_solution)
+        toolbox.register("evaluate", self.model.evaluate_solution)
 
         self.toolbox = toolbox
 
@@ -122,18 +121,19 @@ def main():
     from scenario_reader import read_transportations, read_schedule
     from model.model import AgentMobilityModel
 
-    transportations_file = "C:\\wspace\\projects\\intmodel\\resources\\transportations"
+    # transportations_file = "C:\\wspace\\projects\\intmodel\\resources\\transportations"
+    transportations_file = "C:\\wspace\\projects\\intmodel\\resources\\spb_passengers"
     transportations = read_transportations(transportations_file)
     x_size = 30
     y_size = 30
     cores = 5
     # base_sched = creator.ScheduleIndividual(read_schedule("C:\\wspace\\projects\intmodel\\resources\\basic")) # remove external parameters
     ammodel = AgentMobilityModel(x_size, y_size, transportations, cores)
-    scheduler = IntervalMixtureSchedGA(ammodel, max_centers=2, ext_sol=None)
-    result = scheduler(1100, 1440)
+    scheduler = IntervalMixtureSchedGA(ammodel, max_centers=3, ext_sol=None)
+    result = scheduler(1150, 1200)
     best_solution = result[2].items[0]
-    best_schedule = scheduler.solution_to_schedule(best_solution)
-    out_schedule = open("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule4.sched", 'w')
+    best_schedule = scheduler.model.solution_to_schedule(best_solution)
+    out_schedule = open("C:\\wspace\\projects\\intmodel\\tmp\\spb_scheduleZ.sched", 'w')
     for x in range(x_size):
         for y in range(y_size):
             out_schedule.write("{}\t{}\n".format(x * y_size + y, best_schedule[x][y]))

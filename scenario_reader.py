@@ -7,7 +7,7 @@ x_size = 30
 y_size = 30
 agent_model_time = 0.01
 agent_transfer_time = 0.1
-max_value = 905
+max_value = 4670
 
 
 def agent_model_time_func(agents):
@@ -113,7 +113,7 @@ def corresponds_modelling(transportations, schedules):
         total_times[i] = total_model_time.max()
 
         # draw output
-        if i % 25 == 0:
+        if i % 5 == 0:
             plt.imshow(field, vmax=max_value)
             plt.contour(schedule, cmap='Set1', alpha=0.4, linestyles="--")
             plt.show()
@@ -143,17 +143,22 @@ if __name__ == '__main__':
     # schedule1 = read_schedule("resources\\schedule1")
     # schedule2 = read_schedule("resources\\schedule2")
     # schedule3 = read_schedule("resources\\schedule3")
-    schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule1.sched")
-    schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule2.sched")
-    schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule3.sched")
+    # schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule1.sched")
+    # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule2.sched")
+    # schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule3.sched")
     # schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule1")
     # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule2")
     # schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule3")
     # full_ga_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\full_schedule")
     # full_ga_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\raw_spb_schedule")
+    # full_spb_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule.sched")
+    schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule1.sched")
+    schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule2.sched")
+    schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule3.sched")
     schedules = dict()
     # schedules[0] = schedule
     # schedules[0] = full_ga_schedule
+    # schedules[0] = full_spb_schedule
     schedules[0] = schedule1
     schedules[500] = schedule2
     schedules[1100] = schedule3

@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import random as rnd
-from deap import creator
+# from deap import creator
+from scipy.spatial import distance
 
 agent_model_time = 0.1
 agent_transfer_time = 0.5
@@ -23,9 +24,25 @@ class AgentMobilityModel:
         self.cores = cores
         self.ev_start = 0
         self.ev_end = self.iterations
+        self.field = np.zeros((self.x_size, self.y_size), dtype=np.int32)
+        self.init_simulation()
 
     def r2m(self, idx):
         return idx // self.y_size, idx % self.y_size
+
+    def init_simulation(self):
+        for i in range(self.ev_start):
+            # iteration
+            iteration_data = self.transportations[i]
+            for corr in iteration_data:
+                if corr[0] == corr[1]:
+                    p = self.r2m(corr[0])
+                    self.field[p[0]][p[1]] += corr[2]
+                else:
+                    p1 = self.r2m(corr[0])
+                    p2 = self.r2m(corr[1])
+                    self.field[p1[0]][p1[1]] -= corr[2]
+                    self.field[p2[0]][p2[1]] += corr[2]
 
     def simulation(self, schedule):
         # initialization
@@ -33,9 +50,9 @@ class AgentMobilityModel:
         # transfer_times = np.zeros(self.iterations)
         total_times = np.zeros(self.ev_end)
         schedule = schedule
-        field = np.zeros((self.x_size, self.y_size), dtype=np.int32)
+        field = np.copy(self.field)
 
-        for i in range(self.ev_end):
+        for i in range(self.ev_start, self.ev_end):
             # iteration
             iteration_data = self.transportations[i]
             cores_model = np.zeros(self.cores)
@@ -68,3 +85,28 @@ class AgentMobilityModel:
             total_times[i] = total_model_time.max()
         result = total_times[self.ev_start:self.ev_end].sum()
         return result,
+
+    def calc_distance(self, point, centers):
+        dists = np.zeros(len(centers))
+        for c in range(len(centers)):
+            dists[c] = distance.euclidean(point, centers[c])
+        return dists.min()
+
+
+    def solution_to_schedule(self, solution):
+        x_size = self.x_size
+        y_size = self.y_size
+        cores = self.cores
+        schedule = np.zeros((x_size, y_size), dtype=np.int32)
+        for x in range(x_size):
+            for y in range(y_size):
+                distances = np.zeros(cores)
+                for c in range(cores):
+                    distances[c] = self.calc_distance((x, y), solution[c])
+                core_idx = np.argmin(distances)
+                schedule[x][y] = core_idx
+        return schedule
+
+    def evaluate_solution(self, solution):
+        schedule = self.solution_to_schedule(solution)
+        return self.simulation(schedule)

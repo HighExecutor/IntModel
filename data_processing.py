@@ -103,18 +103,18 @@ if __name__ == '__main__':
             cur_x = p_to[0]
             cur_y = p_to[1]
             pass
-
-    trans_file = open("C:\\wspace\\projects\\IntModel\\resources\\spb_passengers", 'w')
-    trans_file.write("1440\n")
-    for i in range(1440):
-        print("write {}".format(i))
-        not_zero_cells = np.count_nonzero(spb_transporations[i])
-        trans_file.write(str(not_zero_cells) + "\n")
-        for j in range(cells):
-            for k in range(cells):
-                if spb_transporations[i][j][k] != 0:
-                    print("{}\t{}\t{}".format(j, k, spb_transporations[i][j][k]))
-                    trans_file.write("{}\t{}\t{}\n".format(j, k, spb_transporations[i][j][k]))
-    trans_file.close()
+    #
+    # trans_file = open("C:\\wspace\\projects\\IntModel\\resources\\spb_passengers", 'w')
+    # trans_file.write("1440\n")
+    # for i in range(1440):
+    #     print("write {}".format(i))
+    #     not_zero_cells = np.count_nonzero(spb_transporations[i])
+    #     trans_file.write(str(not_zero_cells) + "\n")
+    #     for j in range(cells):
+    #         for k in range(cells):
+    #             if spb_transporations[i][j][k] != 0:
+    #                 print("{}\t{}\t{}".format(j, k, spb_transporations[i][j][k]))
+    #                 trans_file.write("{}\t{}\t{}\n".format(j, k, spb_transporations[i][j][k]))
+    # trans_file.close()
     print("Max value = {}".format(spb_transporations.max()))
-    print("x_size = {}, y_size = {}, cells = {}".format(x_size, y_size, cells))
+    # print("x_size = {}, y_size = {}, cells = {}".format(x_size, y_size, cells))
