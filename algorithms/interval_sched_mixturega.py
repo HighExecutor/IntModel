@@ -22,7 +22,7 @@ class IntervalMixtureSchedGA:
         core_idx = rnd.randint(self.model.cores)
         center_idx = rnd.randint(self.max_centers)
         cord_idx = rnd.randint(2)
-        mutant[core_idx][center_idx][cord_idx] += rnd.normal(0, 0.3 * self.model.x_size) # TODO if x==y
+        mutant[core_idx][center_idx][cord_idx] += rnd.normal(0, 0.05 * self.model.x_size) # TODO if x==y
         if mutant[core_idx][center_idx][cord_idx] < 0:
             mutant[core_idx][center_idx][cord_idx] = 0
         if mutant[core_idx][center_idx][cord_idx] > self.model.x_size:
@@ -76,16 +76,17 @@ class IntervalMixtureSchedGA:
     #     return self.model.simulation(schedule)
 
 
-    def __init__(self, model, max_centers=1, ext_sol=None):
-        self.pool = Pool(8)
+    def __init__(self, model, outpath, max_centers=1, ext_sol=None, ):
+        self.pool = Pool(10)
         # base params
         self.pop_size = 32
         self.generations = 500
-        self.mut_prob = 0.6
-        self.cross_prob = 0.1
+        self.mut_prob = 0.5
+        self.cross_prob = 0.15
         self.model = model
         self.max_centers = max_centers
         self.external_sol = ext_sol
+        self.outpath = outpath
 
         toolbox = base.Toolbox()
         toolbox.register("map", self.pool.map)
@@ -97,17 +98,28 @@ class IntervalMixtureSchedGA:
         toolbox.register("mutate", self.mutation)
         toolbox.register("select", tools.selTournament, tournsize=3)
         toolbox.register("evaluate", self.model.evaluate_solution)
+        toolbox.register("savesched", self.write_solution)
+        toolbox.register("plotsolution", self.model.plotsolution)
 
         self.toolbox = toolbox
+
+    def write_solution(self, best):
+        best_schedule = self.model.solution_to_schedule(best)
+        out_schedule = open(self.outpath, 'w')
+        for x in range(self.model.x_size):
+            for y in range(self.model.y_size):
+                out_schedule.write("{}\t{}\n".format(x * self.model.y_size + y, best_schedule[x][y]))
+        out_schedule.close()
 
     def __call__(self, start, end):
         self.model.ev_start = start
         self.model.ev_end = end
+        self.model.init_simulation()
         pop = self.toolbox.population()
-        if self.external_sol is not None:
-            pop[0] = self.external_sol
+        # if self.external_sol is not None:
+        #     pop[0] = self.external_sol
 
-        hof = tools.HallOfFame(3, np.array_equal)
+        hof = tools.HallOfFame(2, np.array_equal)
         stats = tools.Statistics(lambda ind: np.array(ind.fitness.values))
         stats.register("avg", np.mean, axis=0)
         stats.register("std", np.std, axis=0)
@@ -117,27 +129,25 @@ class IntervalMixtureSchedGA:
         return pop, logbook, hof
 
 
-def main():
-    from scenario_reader import read_transportations, read_schedule
-    from model.model import AgentMobilityModel
 
-    # transportations_file = "C:\\wspace\\projects\\intmodel\\resources\\transportations"
-    transportations_file = "C:\\wspace\\projects\\intmodel\\resources\\spb_passengers"
-    transportations = read_transportations(transportations_file)
-    x_size = 30
-    y_size = 30
-    cores = 5
-    # base_sched = creator.ScheduleIndividual(read_schedule("C:\\wspace\\projects\intmodel\\resources\\basic")) # remove external parameters
-    ammodel = AgentMobilityModel(x_size, y_size, transportations, cores)
-    scheduler = IntervalMixtureSchedGA(ammodel, max_centers=3, ext_sol=None)
-    result = scheduler(1150, 1200)
-    best_solution = result[2].items[0]
-    best_schedule = scheduler.model.solution_to_schedule(best_solution)
-    out_schedule = open("C:\\wspace\\projects\\intmodel\\tmp\\spb_scheduleZ.sched", 'w')
-    for x in range(x_size):
-        for y in range(y_size):
-            out_schedule.write("{}\t{}\n".format(x * y_size + y, best_schedule[x][y]))
-    out_schedule.close()
+
+def main():
+    from scenario_reader_velo import read_transportations, read_schedule
+    from model.model import AgentMobilityModel
+    for iters in range(1):
+        print("Iter = {}".format(iters))
+        transportations_file = "C:\\wspace\\projects\\intmodel\\resources\\spb_passengers_center_100k_1"
+        transportations = read_transportations(transportations_file)
+        x_size = 30
+        y_size = 30
+        cores = 9
+        ammodel = AgentMobilityModel(x_size, y_size, transportations, cores)
+        # outpath = "C:\\wspace\\projects\\intmodel\\tmp\\multiple\\10_include\\spb_schedule_velo_{}_{}.sched".format((iters)*144, (iters+1)*144)
+        outpath = "C:\\wspace\\projects\\intmodel\\tmp\\test"
+        scheduler = IntervalMixtureSchedGA(ammodel, outpath, max_centers=3, ext_sol=None)
+        result = scheduler(iters*144, (iters+1)*144)
+        best_solution = result[2].items[0]
+        scheduler.write_solution(best_solution)
 
 
 if __name__ == "__main__":

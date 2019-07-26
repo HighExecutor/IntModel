@@ -1,27 +1,9 @@
 import numpy as np
-import matplotlib.pylab as plt
-from sys import stdout
-from numpy import random
+from model.model import AgentMobilityModel
 
 x_size = 30
 y_size = 30
-agent_model_time = 0.01
-agent_transfer_time = 0.1
-max_value = 4670
 
-
-def agent_model_time_func(agents):
-    stable_time = agents * agent_model_time
-    return stable_time + random.normal(loc=stable_time*0.1, scale=stable_time*0.01)
-
-v_agent_transfer_time = np.vectorize(agent_model_time_func)
-
-def agent_model_test():
-    ag = np.arange(10000, 1000000, 100)
-    times = v_agent_transfer_time(ag)
-    plt.plot(ag, times)
-    plt.plot(ag, ag * agent_model_time)
-    plt.show()
 
 def read_iteration(file):
     corr_count = int(file.readline())
@@ -62,106 +44,32 @@ def r2m(idx):
     return idx // y_size, idx % y_size
 
 
-def corresponds_modelling(transportations, schedules):
-    # initialization
-    iters = len(transportations)
-    model_times = np.zeros(iters)
-    transfer_times = np.zeros(iters)
-    total_times = np.zeros(iters)
-    schedule = schedules[0]
-    field = np.zeros((x_size, y_size), dtype=np.int32)
-    plt.ion()
-    plt.imshow(field, vmax=max_value)
-    plt.contour(schedule, alpha=0.5, cmap='Set1')
-    plt.tight_layout()
-    plt.show()
-    plt.pause(0.0000001)
-
-    for i in range(iters):
-        if i in schedules.keys():
-            schedule = schedules[i]
-        # iteration
-        cores = schedule.max()
-        iter = transportations[i]
-        cores_model = np.zeros(cores)
-        cores_transfers = np.zeros(cores)
-
-        for corr in iter:
-            if corr[0] == corr[1]:
-                p = r2m(corr[0])
-                field[p[0]][p[1]] += corr[2]
-            else:
-                p1 = r2m(corr[0])
-                p2 = r2m(corr[1])
-                field[p1[0]][p1[1]] -= corr[2]
-                field[p2[0]][p2[1]] += corr[2]
-                core1 = schedule[p1[0]][p1[1]]
-                core2 = schedule[p2[0]][p2[1]]
-                if core1 != core2:
-                    cores_transfers[core1-1] += corr[2]
-                    cores_transfers[core2-1] += corr[2]
-        for x in range(x_size):
-            for y in range(y_size):
-                cores_model[schedule[x][y]-1] += field[x][y]
-
-        cores_transfers = cores_transfers * agent_transfer_time
-        cores_model = v_agent_transfer_time(cores_model)
-        total_model_time = cores_model + cores_transfers
-
-        model_times[i] = cores_model.max()
-        transfer_times[i] = cores_transfers.max()
-        total_times[i] = total_model_time.max()
-
-        # draw output
-        if i % 5 == 0:
-            plt.imshow(field, vmax=max_value)
-            plt.contour(schedule, cmap='Set1', alpha=0.4, linestyles="--")
-            plt.show()
-            plt.pause(0.0000001)
-            plt.clf()
-        stdout.write("\riteration=%d" % i)
-        stdout.flush()
-    plt.close()
-    plt.ioff()
-    print("\nmodel sum={}".format(model_times.sum()))
-    print("transfer sum={}".format(transfer_times.sum()))
-    print("total time={}".format(total_times.sum()))
-    x_range = np.arange(0, iters)
-    plt.plot(x_range, model_times, label='model')
-    plt.plot(x_range, transfer_times, label='transfer')
-    plt.plot(x_range, total_times, label='total')
-    plt.legend()
-    plt.show()
+def corresponds_modelling(transportations, schedules, cores):
+    ammodel = AgentMobilityModel(x_size, y_size, transportations, cores)
+    ammodel.interactive_simulation(schedules)
 
 
 if __name__ == '__main__':
-    # agent_model_test()
-    # transportations_file = "resources\\transportations"
-    transportations_file = "resources\\spb_passengers"
+    transportations_file = "resources\\spb_passengers_center_100k_1"
     transportations = read_transportations(transportations_file)
-    # schedule = read_schedule("resources\\basic")
+    cores = 9
+    schedule = read_schedule("resources\\basic")
     # schedule1 = read_schedule("resources\\schedule1")
     # schedule2 = read_schedule("resources\\schedule2")
     # schedule3 = read_schedule("resources\\schedule3")
-    # schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule1.sched")
-    # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule2.sched")
-    # schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule3.sched")
-    # schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule1")
-    # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule2")
-    # schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule3")
-    # full_ga_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\full_schedule")
-    # full_ga_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\raw_spb_schedule")
-    # full_spb_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule.sched")
-    schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule1.sched")
-    schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule2.sched")
-    schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule3.sched")
+    full_spb_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule.sched")
+    # schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule1_6.sched")
+    # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule2_6.sched")
+    # schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule3_6.sched")
+    schedule_single = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule1_1.sched")
     schedules = dict()
     # schedules[0] = schedule
-    # schedules[0] = full_ga_schedule
     # schedules[0] = full_spb_schedule
-    schedules[0] = schedule1
-    schedules[500] = schedule2
-    schedules[1100] = schedule3
-    corresponds_modelling(transportations, schedules)
+    schedules[0] = schedule_single
+    # schedules[0] = schedule1
+    # schedules[530] = schedule2
+    # schedules[1050] = schedule3
+    result = corresponds_modelling(transportations, schedules, cores)
+
 
     pass

@@ -21,7 +21,7 @@ def show_schedule(schedules):
     for key in schedules.keys():
         sched = schedules[key]
         plt.figure()
-        plt.imshow(sched)
+        plt.imshow(sched, cmap="Pastel1")
         plt.title(key)
         plt.show()
         plt.close()
@@ -39,23 +39,25 @@ if __name__ == '__main__':
     # schedule1 = read_schedule("resources\\schedule1")
     # schedule2 = read_schedule("resources\\schedule2")
     # schedule3 = read_schedule("resources\\schedule3")
-    # schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule1.sched")
-    # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule2.sched")
-    # schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\mix_schedule3.sched")
+    schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule1.sched")
+    schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule2.sched")
+    schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule3.sched")
     # schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule1")
     # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule2")
     # schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\last_schedule3")
     # full_ga_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\full_schedule")
     # full_ga_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\raw_spb_schedule")
-    full_spb_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_scheduleZ.sched")
-    schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule1.sched")
-    schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule2.sched")
-    schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule3.sched")
+    # full_spb_schedule = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule.sched")
+    # schedule1 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule1_6.sched")
+    # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule2_6.sched")
+    # schedule2 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule_velo_single.sched")
+    # schedule3 = read_schedule("C:\\wspace\\projects\\intmodel\\tmp\\spb_schedule3_6.sched")
     schedules = dict()
-    # schedules["1"] = schedule1
-    # schedules["2"] = schedule2
-    # schedules["3"] = schedule3
-    schedules['full'] = full_spb_schedule
+    schedules["0"] = schedule1
+    schedules["550"] = schedule2
+    schedules["1050"] = schedule3
+    # schedules["basic"] = schedule
+    # schedules['full'] = full_spb_schedule
     show_schedule(schedules)
 
     pass

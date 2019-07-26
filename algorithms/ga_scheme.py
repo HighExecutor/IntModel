@@ -68,7 +68,12 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
         # Update the statistics with the new population
         record = stats.compile(population) if stats is not None else {}
         logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+        if gen % 50 == 0:
+            best_sol = halloffame.items[0]
+            toolbox.savesched(best_sol)
+            # toolbox.plotsolution(best_sol)
         if verbose:
             print(logbook.stream)
 
     return population, logbook
+
