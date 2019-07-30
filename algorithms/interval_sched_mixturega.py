@@ -5,6 +5,7 @@ from numpy import random as rnd
 import numpy as np
 
 from deap import creator
+
 creator.create("TimeFit", base.Fitness, weights=(-1.0,))
 creator.create("ScheduleMixtureIndividual", np.ndarray, fitness=creator.TimeFit)
 
@@ -15,14 +16,14 @@ class IntervalMixtureSchedGA:
         y_size = self.model.y_size
         cores = self.model.cores
         max_centers = self.max_centers
-        solution = rnd.random((cores, max_centers, 2)) * x_size # TODO if x==y
+        solution = rnd.random((cores, max_centers, 2)) * x_size  # TODO if x==y
         return solution
 
     def mutation(self, mutant):
         core_idx = rnd.randint(self.model.cores)
         center_idx = rnd.randint(self.max_centers)
         cord_idx = rnd.randint(2)
-        mutant[core_idx][center_idx][cord_idx] += rnd.normal(0, 0.05 * self.model.x_size) # TODO if x==y
+        mutant[core_idx][center_idx][cord_idx] += rnd.normal(0, 0.05 * self.model.x_size)  # TODO if x==y
         if mutant[core_idx][center_idx][cord_idx] < 0:
             mutant[core_idx][center_idx][cord_idx] = 0
         if mutant[core_idx][center_idx][cord_idx] > self.model.x_size:
@@ -47,40 +48,14 @@ class IntervalMixtureSchedGA:
             else:
                 c1[i] = np.copy(p2[i])
                 c2[i] = np.copy(p1[i])
-            i+=1
+            i += 1
         return c1, c2
-
-    # def calc_distance(self, point, centers):
-    #     dists = np.zeros(len(centers))
-    #     for c in range(len(centers)):
-    #         dists[c] = distance.euclidean(point, centers[c])
-    #     return dists.min()
-    #
-    #
-    # def solution_to_schedule(self, solution):
-    #     x_size = self.model.x_size
-    #     y_size = self.model.y_size
-    #     cores = self.model.cores
-    #     schedule = np.zeros((x_size, y_size), dtype=np.int32)
-    #     for x in range(x_size):
-    #         for y in range(y_size):
-    #             distances = np.zeros(cores)
-    #             for c in range(cores):
-    #                 distances[c] = self.calc_distance((x, y), solution[c])
-    #             core_idx = np.argmin(distances)
-    #             schedule[x][y] = core_idx
-    #     return schedule
-    #
-    # def evaluate_solution(self, solution):
-    #     schedule = self.solution_to_schedule(solution)
-    #     return self.model.simulation(schedule)
-
 
     def __init__(self, model, outpath, max_centers=1, ext_sol=None, ):
         self.pool = Pool(10)
         # base params
         self.pop_size = 32
-        self.generations = 500
+        self.generations = 100
         self.mut_prob = 0.5
         self.cross_prob = 0.15
         self.model = model
@@ -129,23 +104,21 @@ class IntervalMixtureSchedGA:
         return pop, logbook, hof
 
 
-
-
 def main():
-    from scenario_reader_velo import read_transportations, read_schedule
+    from simulation_launch import read_transportations, read_schedule
     from model.model import AgentMobilityModel
     for iters in range(1):
         print("Iter = {}".format(iters))
-        transportations_file = "C:\\wspace\\projects\\intmodel\\resources\\spb_passengers_center_100k_1"
+        # Select input scenario file
+        transportations_file = "..\\resources\\spb_passengers_center_100k_1"
         transportations = read_transportations(transportations_file)
         x_size = 30
         y_size = 30
         cores = 9
         ammodel = AgentMobilityModel(x_size, y_size, transportations, cores)
-        # outpath = "C:\\wspace\\projects\\intmodel\\tmp\\multiple\\10_include\\spb_schedule_velo_{}_{}.sched".format((iters)*144, (iters+1)*144)
-        outpath = "C:\\wspace\\projects\\intmodel\\tmp\\test"
+        outpath = "..\\tmp\\schedule_output.sched"
         scheduler = IntervalMixtureSchedGA(ammodel, outpath, max_centers=3, ext_sol=None)
-        result = scheduler(iters*144, (iters+1)*144)
+        result = scheduler(iters * 144, (iters + 1) * 144)
         best_solution = result[2].items[0]
         scheduler.write_solution(best_solution)
 

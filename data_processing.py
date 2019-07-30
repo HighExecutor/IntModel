@@ -10,7 +10,8 @@ def m2r(x, y, x_size):
 
 
 if __name__ == '__main__':
-    path = "C:\\wspace\\projects\\IntModel\\resources\\marsh.csv"
+    # path to input dataset
+    path = "resources\\marsh.csv"
     data = pd.read_csv(path, delimiter=';')
     ids = data.id_card.unique()
 
@@ -134,13 +135,13 @@ if __name__ == '__main__':
             cur_x = p_to[0]
             cur_y = p_to[1]
 
-    #
-    trans_file = open("C:\\wspace\\projects\\IntModel\\resources\\file_path", 'w')
+    # Path to output scenario file
+    trans_file = open("tmp\\output_scenario", 'w')
     trans_file.write("1440\n")
     for i in range(1440):
         print("write {}".format(i))
         non_zero_elements = np.nonzero(spb_transporations[i])
-        not_zero_cells = len(non_zero_elements[0]) #np.count_nonzero(spb_transporations[i])
+        not_zero_cells = len(non_zero_elements[0])
         trans_file.write(str(not_zero_cells) + "\n")
         if not_zero_cells == 0:
             continue
