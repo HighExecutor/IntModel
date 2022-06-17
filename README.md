@@ -11,5 +11,6 @@ https://www.scitepress.org/Papers/2019/83656/83656.pdf
 
 Density of workload
 ![plot](./res_plot.png)
+
 Example of an dynamic solution
 ![plot](./sim_res.png)
